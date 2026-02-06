@@ -1,19 +1,39 @@
 import os
 import joblib
 import pandas as pd
+
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from nutrition_rules import get_nutrition_recommendation
+
+app = FastAPI(
+    title="AI-Driven Nutrition Recommendation System",
+    description="Predicts calorie level and recommends nutrition for children",
+    version="1.0"
+)
+
 print("FastAPI app module loaded successfully")
 
-app = FastAPI(title="AI-Driven Nutrition Recommendation System")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 model = joblib.load(os.path.join(BASE_DIR, "model", "calorie_model.pkl"))
 feature_encoders = joblib.load(os.path.join(BASE_DIR, "model", "feature_encoders.pkl"))
 target_encoder = joblib.load(os.path.join(BASE_DIR, "model", "target_encoder.pkl"))
+
+
 
 class ChildInput(BaseModel):
     age: int
@@ -22,13 +42,19 @@ class ChildInput(BaseModel):
     weight_kg: float
     activity_level: str
 
-def calculate_bmi(weight, height_cm):
-    height_m = height_cm / 100
-    return weight / (height_m ** 2)
 
+def calculate_bmi(weight_kg: float, height_cm: float) -> float:
+    height_m = height_cm / 100
+    return weight_kg / (height_m ** 2)
+
+
+@app.get("/")
+def health_check():
+    return {"status": "API is running"}
 
 @app.post("/predict")
 def predict_nutrition(data: ChildInput):
+    
     bmi = calculate_bmi(data.weight_kg, data.height_cm)
 
     input_df = pd.DataFrame([{
@@ -40,14 +66,17 @@ def predict_nutrition(data: ChildInput):
         "Activity_Level": data.activity_level
     }])
 
+    
     for col, encoder in feature_encoders.items():
         input_df[col] = encoder.transform(input_df[col])
 
+   
     prediction = model.predict(input_df)[0]
     calorie_level = target_encoder.inverse_transform([prediction])[0]
 
     nutrition_plan = get_nutrition_recommendation(calorie_level)
 
+    
     return {
         "BMI": round(bmi, 2),
         "Calorie_Level": calorie_level,
