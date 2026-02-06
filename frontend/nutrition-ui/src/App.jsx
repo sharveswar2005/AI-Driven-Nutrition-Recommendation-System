@@ -42,25 +42,20 @@ function App() {
 
   return (
     <div className="page">
-      {/* INPUT CARD */}
+       <div className="container">
       <motion.div
         className="card"
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1>AI-Driven Nutrition Recommendation</h1>
+        <h1 className="title">AI-Driven Nutrition Recommendation</h1>
         <p className="subtitle">
           Personalized nutrition guidance for children based on health and activity.
         </p>
 
         <form onSubmit={handleSubmit}>
           <div className="grid">
-            <input
-              name="age"
-              placeholder="Age (years)"
-              onChange={handleChange}
-              required
-            />
+            <input name="age" placeholder="Age (years)" onChange={handleChange} required />
             <input
               name="height_cm"
               placeholder="Height (cm)"
@@ -92,14 +87,13 @@ function App() {
         </form>
       </motion.div>
 
-      {/* RESULT CARD */}
       {result && (
         <motion.div
           className="result-card"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
         >
-          <h2>Health Summary</h2>
+          <h2 className="section-title">Health Summary</h2>
 
           <div className="stats">
             <div className="stat-box">
@@ -115,16 +109,16 @@ function App() {
 
           <p className="explanation">
             {result.Calorie_Level === "Low" &&
-              "Low calorie requirement indicates limited daily energy needs. The focus is on balanced nutrition without excess calories."}
+              "Low calorie requirement indicates limited daily energy needs. Focus on balanced nutrition without excess calories."}
 
             {result.Calorie_Level === "Medium" &&
-              "Medium calorie requirement indicates healthy growth needs with a balanced intake of carbohydrates, proteins, and fats."}
+              "Medium calorie requirement supports healthy growth with balanced carbohydrates, proteins, and fats."}
 
             {result.Calorie_Level === "High" &&
-              "High calorie requirement indicates higher energy needs due to growth or activity. A nutrient-dense diet is recommended."}
+              "High calorie requirement reflects higher energy needs due to growth or activity. Nutrient-dense meals are recommended."}
           </p>
 
-          <h3>Recommended Nutrition Plan</h3>
+          <h3 className="section-title">Recommended Nutrition Plan</h3>
 
           {Object.entries(result.Nutrition_Recommendation.Foods).map(
             ([meal, foods]) => (
@@ -136,6 +130,7 @@ function App() {
           )}
         </motion.div>
       )}
+       </div>
     </div>
   );
 }
